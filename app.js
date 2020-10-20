@@ -5,7 +5,7 @@ const cors = require("cors");
 require("./config/db.config");
 
 //Router definition
-const userRouter = require("./routes/user.route");
+const userRouter = require("./routes/auth.route");
 
 const app = express();
 
@@ -13,7 +13,8 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: process.env.ORIGIN,
+    origin: "http://localhost:3000",
+    // origin: process.env.ORIGIN,
   })
 );
 
@@ -22,6 +23,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/user", userRouter);
+app.use("/auth", userRouter);
 
 module.exports = app;

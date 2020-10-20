@@ -8,45 +8,37 @@ const User = require("../models/User.model");
 const Session = require("../models/Session.model");
 const mongoose = require("mongoose");
 
-////////////////////////////////////////////////////////////////////////
-///////////////////////////// SIGNUP //////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-// .post() route ==> to process form data
+/**********************************
+ *  POST - /auth/signup
+ ************************************/
 router.post("/signup", (req, res, next) => {
-  const { username, email, password } = req.body;
+  console.log("/signup", req.body);
+  const { username, email, password, address, phone } = req.body;
 
   if (!username || !email || !password) {
-    res.status(200).json({
+    return res.status(200).json({
       errorMessage:
         "All fields are mandatory. Please provide your username, email and password.",
     });
-    return;
   }
-
   // make sure passwords are strong:
-
   const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
   if (!regex.test(password)) {
-    res.status(200).json({
+    return res.status(200).json({
       errorMessage:
         "Password needs to have at least 6 chars and must contain at least one number, one lowercase and one uppercase letter.",
     });
-    return;
   }
-
   bcryptjs
     .genSalt(saltRounds)
     .then((salt) => bcryptjs.hash(password, salt))
     .then((hashedPassword) => {
       return User.create({
-        // username: username
         username,
         email,
-        // password => this is the key from the User model
-        //     ^
-        //     |            |--> this is placeholder (how we named returning value from the previous method (.hash()))
         password: hashedPassword,
+        address,
+        phone,
       });
     })
     .then((user) => {
@@ -54,38 +46,34 @@ router.post("/signup", (req, res, next) => {
         userId: user._id,
         createdAt: Date.now(),
       }).then((session) => {
-        res.status(200).json({ accessToken: session._id, user });
+        return res.status(200).json({ accessToken: session._id, user });
       });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(200).json({ errorMessage: error.message });
+        return res.status(200).json({ errorMessage: error.message });
       } else if (error.code === 11000) {
-        res.status(200).json({
+        return res.status(200).json({
           errorMessage:
             "Username and email need to be unique. Either username or email is already used.",
         });
       } else {
-        res.status(500).json({ errorMessage: error });
+        return res.status(500).json({ errorMessage: error });
       }
     }); // close .catch()
 });
 
-////////////////////////////////////////////////////////////////////////
-///////////////////////////// LOGIN ////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-// .post() login route ==> to process form data
+/**********************************
+ *  POST - /auth/login
+ ************************************/
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
 
   if (email === "" || password === "") {
-    res.status(500).json({
+    return res.status(500).json({
       errorMessage: "Please enter both, email and password to login.",
     });
-    return;
   }
-
   User.findOne({ email })
     .then((user) => {
       if (!user) {
@@ -107,34 +95,45 @@ router.post("/login", (req, res, next) => {
     .catch((error) => res.status(500).json({ errorMessage: err }));
 });
 
-////////////////////////////////////////////////////////////////////////
-///////////////////////////// LOGOUT ////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
+/**********************************
+ *  DELETE - /auth/logout
+ ************************************/
+router.delete("/logout/:id", (req, res) => {
+  console.log("route => /logout: ", req.params.id);
+  const { id } = req.params;
 
-router.post("/logout", (req, res) => {
-  Session.deleteOne({
-    userId: req.body.accessToken,
-  })
+  Session.findByIdAndRemove({ _id: id })
     .then((session) => {
-      res.status(200).json({ success: "User was logged out" });
+      console.log(" deleted session : ", session);
+      return res.status(200).json({ success: "User was logged out" });
+      session.remove;
     })
-    .catch((error) => res.status(500).json({ errorMessage: error }));
+    .catch((error) => {
+      console.log(" deleted session error : ", error);
+      return res.status(500).json({ errorMessage: error });
+    });
 });
 
+/**********************************
+ *  POST - /auth/session
+ ************************************/
 router.get("/session/:accessToken", (req, res) => {
   const { accessToken } = req.params;
-  Session.findById({ _id: accessToken }).populate("userId").then((session) => {
-    if (!session) {
-      res.status(200).json({
-        errorMessage: "Session does not exist",
-      });
-    } else {
-      res.status(200).json({
-        session
-      });
-    }
-  })
-  .catch(err => res.status(500).json({errorMessage: err}))
+  Session.findById({ _id: accessToken })
+    .populate("userId")
+    .then((session) => {
+      if (!session) {
+        res.status(200).json({
+          errorMessage: "Session does not exist",
+        });
+      } else {
+        res.status(200).json({
+          session,
+        });
+      }
+    })
+    .catch((err) => res.status(500).json({ errorMessage: err }));
 });
 
+/**  */
 module.exports = router;
