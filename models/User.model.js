@@ -29,6 +29,10 @@ const userSchema = new Schema(
     phone: {
       type: Number,
     },
+    userrole: {
+      type: String,
+      enum: ["manager", "customer", "admin"],
+    },
   },
   {
     timestamps: true,

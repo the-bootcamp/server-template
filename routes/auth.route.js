@@ -12,8 +12,8 @@ const mongoose = require("mongoose");
  *  POST - /auth/signup
  ************************************/
 router.post("/signup", (req, res, next) => {
-  console.log("/signup", req.body);
-  const { username, email, password, address, phone } = req.body;
+  // console.log("/signup", req.body);
+  const { username, email, password, address, phone, userrole } = req.body;
 
   if (!username || !email || !password) {
     return res.status(200).json({
@@ -39,6 +39,7 @@ router.post("/signup", (req, res, next) => {
         password: hashedPassword,
         address,
         phone,
+        userrole,
       });
     })
     .then((user) => {
