@@ -32,14 +32,15 @@ router.post("/upload", uploadCloud.array("cottageimages", 5), (req, res) => {
 router.post("/new", (req, res, next) => {
   console.log(" cottage/new =>", req.body);
   console.log("/cottage/new =>", req.headers.accesstoken);
-  const {
+  let {
     cottagetype,
     cottageimages,
     costperday,
     description,
     cottagestatus,
   } = req.body;
-  let addRes = {};
+  cottagestatus = cottagestatus || "free";
+  let addRes = undefined;
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (!sessionFromDB) {
@@ -54,17 +55,24 @@ router.post("/new", (req, res, next) => {
             description,
           });
           newCottage.totalcottages.push({ cottagenumber: 1, cottagestatus });
-          addRes = newCottage.save();
+          newCottage
+            .save()
+            .then((res) =>
+              res.json({ success: "cottage added successfully ", addRes })
+            );
         } else {
           //   console.log(cottageFound.totalcottages.length);
           cottageFound.totalcottages.push({
             cottagenumber: cottageFound.totalcottages.length + 1,
             cottagestatus,
           });
-          addRes = cottageFound.save();
-          return res.json({ success: "cottage added successfully ", addRes });
+          cottageFound
+            .save()
+            .then((addRes) =>
+              res.json({ success: "cottage added successfully ", addRes })
+            );
+          // return res.json({ success: "cottage added successfully ", addRes });
         } // else
-        return res.json({ success: "cottage added successfully ", addRes });
       });
     })
     .catch((error) =>
@@ -76,6 +84,8 @@ router.post("/new", (req, res, next) => {
  *  POST - /cottage/get
  ************************************/
 router.get("/all", (req, res, next) => {
+  console.log("/cottage/all =>", req.headers.accesstoken);
+
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (!sessionFromDB) {
