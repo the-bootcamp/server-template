@@ -39,7 +39,9 @@ router.post("/new", (req, res, next) => {
     description,
     cottagestatus,
   } = req.body;
-  cottagestatus = cottagestatus || "free";
+
+  cottagestatus = cottagestatus ? cottagestatus : "free";
+
   let addRes = undefined;
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
@@ -57,8 +59,10 @@ router.post("/new", (req, res, next) => {
           newCottage.totalcottages.push({ cottagenumber: 1, cottagestatus });
           newCottage
             .save()
-            .then((res) =>
-              res.json({ success: "cottage added successfully ", addRes })
+            .then((addRes) =>
+              res
+                .status(200)
+                .json({ success: "cottage added successfully ", addRes })
             );
         } else {
           //   console.log(cottageFound.totalcottages.length);
@@ -69,11 +73,71 @@ router.post("/new", (req, res, next) => {
           cottageFound
             .save()
             .then((addRes) =>
-              res.json({ success: "cottage added successfully ", addRes })
+              res
+                .status(200)
+                .json({ success: "cottage added successfully ", addRes })
             );
           // return res.json({ success: "cottage added successfully ", addRes });
         } // else
       });
+    })
+    .catch((error) =>
+      res.status(200).json({ errorMessage: "Session is not active", error })
+    );
+});
+
+/**********************************
+ *  POST - /cottage/deleteNum/:id
+ ************************************/
+router.delete("/deleteNum/:id", (req, res) => {
+  console.log("/cottage/deleteNum =>", req.headers.accesstoken);
+  console.log("/cottage/deleteNum =>", req.params.id);
+  Session.findById({ _id: req.headers.accesstoken })
+    .then((sessionFromDB) => {
+      if (!sessionFromDB) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
+      Cottage.findById({ _id: req.params.id }).then((foundCottages) => {
+        // console.log(foundCottages.totalcottages);
+        if (foundCottages.totalcottages.length <= 1) {
+          return res.status(200).json({
+            errorMessage: "There is ony one cottage, so cannot delet them",
+          });
+        }
+        foundCottages.totalcottages.pop();
+        foundCottages.save().then((deletedRes) =>
+          res.status(200).json({
+            success: "cottage count decremented ",
+            deletedRes,
+          })
+        );
+      });
+    })
+    .catch((error) =>
+      res.status(200).json({ errorMessage: "Session is not active", error })
+    );
+});
+
+/**********************************
+ *  POST - /cottage/deleteCategory/:id
+ ************************************/
+router.delete("/deleteCategory/:id", (req, res) => {
+  console.log("/cottage/deleteCategory =>", req.headers.accesstoken);
+  console.log("/cottage/deleteCategory =>", req.params.id);
+  Session.findById({ _id: req.headers.accesstoken })
+    .then((sessionFromDB) => {
+      if (!sessionFromDB) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
+      Cottage.findByIdAndDelete({ _id: req.params.id }).then(
+        (deletedCottage) => {
+          // console.log(deletedCottage);
+          res.status(200).json({
+            success: "Successfully deleted the cottage category",
+            deletedCottage,
+          });
+        }
+      );
     })
     .catch((error) =>
       res.status(200).json({ errorMessage: "Session is not active", error })
