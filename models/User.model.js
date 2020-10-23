@@ -33,6 +33,10 @@ const userSchema = new Schema(
       type: String,
       enum: ["manager", "customer", "admin"],
     },
+    membership: {
+      type: String,
+      enum: ["gold", "silver", "platinum"],
+    },
   },
   {
     timestamps: true,

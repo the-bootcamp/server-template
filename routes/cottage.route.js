@@ -41,8 +41,6 @@ router.post("/new", (req, res, next) => {
   } = req.body;
 
   cottagestatus = cottagestatus ? cottagestatus : "free";
-
-  let addRes = undefined;
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (!sessionFromDB) {
@@ -77,7 +75,6 @@ router.post("/new", (req, res, next) => {
                 .status(200)
                 .json({ success: "cottage added successfully ", addRes })
             );
-          // return res.json({ success: "cottage added successfully ", addRes });
         } // else
       });
     })
@@ -145,6 +142,38 @@ router.delete("/deleteCategory/:id", (req, res) => {
 });
 
 /**********************************
+ *  POST - /cottage/update
+ ************************************/
+router.post("/update/:id", (req, res, next) => {
+  console.log("/cottage/update =>", req.headers.accesstoken);
+  console.log("/cottage/update =>", req.body);
+  console.log("/cottage/update =>", req.params.id);
+
+  const body = Object.fromEntries(
+    Object.entries(req.body).filter((el) => el[1])
+  );
+
+  Session.findById({ _id: req.headers.accesstoken })
+    .then((sessionFromDB) => {
+      if (!sessionFromDB) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
+      Cottage.findByIdAndUpdate(req.params.id, body, {
+        new: true,
+      }).then(
+        (recordUpdated) =>
+          res.status(200).json({
+            success: "Cottage details updated successfully ",
+            recordUpdated,
+          })
+        // console.log("  UPDATED RECORD: ", recordUpdated)
+      );
+    })
+    .catch((error) =>
+      res.status(200).json({ errorMessage: "Session is not active", error })
+    );
+});
+/**********************************s
  *  POST - /cottage/get
  ************************************/
 router.get("/all", (req, res, next) => {
