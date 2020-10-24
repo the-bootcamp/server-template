@@ -35,7 +35,11 @@ const userSchema = new Schema(
     },
     membership: {
       type: String,
-      enum: ["gold", "silver", "platinum"],
+      enum: ["silver", "gold", "platinum"],
+    },
+    defaultcottage: {
+      type: String,
+      enum: ["standard", "classic", "superior"],
     },
   },
   {
