@@ -12,16 +12,8 @@ const cottageSchema = new Schema(
     cottageimages: { type: [] },
     costperday: { type: Number },
     description: { type: String },
-    // totalcottages: [
-    // {
-    //   cottagenumber: { type: Number },
-    //   // cottagestatus: {
-    //   //   type: String,
-    //   //   enum: ["full", "free", "disable"],
-    //   // },
-    // },
-    // ],
     totalcottages: [{ type: Number }],
+    amenities: [{ type: String }],
   },
   { timestamps: true }
 );
