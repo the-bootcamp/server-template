@@ -1,7 +1,6 @@
 const app = require("express");
 const router = new app.Router();
-const User = require("../models/User.model");
-const Session = require("../models/Session.model");
+const Subscriptions = require("../models/Subscription.model");
 const mongoose = require("mongoose");
 
 /**********************************
@@ -30,6 +29,39 @@ router.post("/edit", (req, res) => {
     .catch((error) =>
       res.status(200).json({ errorMessage: "Session is not active", error })
     );
+});
+
+/**********************************
+ *  POST - /user/subscribe/:email
+ ************************************/
+router.post("/subscribe/:email", (req, res, next) => {
+  console.log(req.params.email);
+  if (!req.params.email) {
+    return res.status(200).json({
+      errorMessage: "Email-Id is empty.",
+    });
+  }
+
+  Subscriptions.create({
+    email: req.params.email,
+    createdAt: Date.now(),
+  })
+    .then((res) => {
+      return res.status(200).json({ success: "User is sunscribed" });
+    })
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return res.status(200).json({ errorMessage: error.message });
+      } else if (error.code === 11000) {
+        return res.status(200).json({
+          errorMessage:
+            "Email need to be unique. Either username or email is already used.",
+        });
+      }
+      // else {
+      //   return res.status(500).json({ errorMessage: error });
+      // }
+    }); // close .catch()
 });
 
 /**  */
