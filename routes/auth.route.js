@@ -12,7 +12,6 @@ const mongoose = require("mongoose");
  *  POST - /auth/signup
  ************************************/
 router.post("/signup", (req, res, next) => {
-  // console.log("/signup", req.body);
   const { username, email, password, address, phone, userrole } = req.body;
 
   if (!username || !email || !password) {
@@ -86,11 +85,11 @@ router.post("/login", (req, res, next) => {
         Session.create({
           userId: user._id,
           createdAt: Date.now(),
-        }).then((session) => {
-          res.status(200).json({ accessToken: session._id, user });
-        });
+        }).then((session) =>
+          res.status(200).json({ accessToken: session._id, user })
+        );
       } else {
-        res.status(200).json({ errorMessage: "Incorrect password." });
+        return res.status(200).json({ errorMessage: "Incorrect password." });
       }
     })
     .catch((error) => res.status(500).json({ errorMessage: err }));
@@ -105,12 +104,10 @@ router.delete("/logout/:id", (req, res) => {
 
   Session.findByIdAndRemove({ _id: id })
     .then((session) => {
-      console.log(" deleted session : ", session);
       return res.status(200).json({ success: "User was logged out" });
       session.remove;
     })
     .catch((error) => {
-      console.log(" deleted session error : ", error);
       return res.status(500).json({ errorMessage: error });
     });
 });
@@ -124,11 +121,11 @@ router.get("/session/:accessToken", (req, res) => {
     .populate("userId")
     .then((session) => {
       if (!session) {
-        res.status(200).json({
+        return res.status(200).json({
           errorMessage: "Session does not exist",
         });
       } else {
-        res.status(200).json({
+        return res.status(200).json({
           session,
         });
       }

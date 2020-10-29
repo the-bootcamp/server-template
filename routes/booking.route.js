@@ -3,6 +3,7 @@ const router = new app.Router();
 const Session = require("../models/Session.model");
 const Booking = require("../models/Booking.model");
 const User = require("../models/User.model");
+const Cottage = require("../models/Cottage.model");
 
 /**********************************
  *  POST - /booking/new
@@ -13,9 +14,10 @@ router.post("/new", (req, res) => {
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
-      console.log(sessionFound.userId);
+      if (!sessionFound) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
       Booking.create(req.body).then((newBooking) => {
-        console.log("Booking created successfully: ", newBooking);
         return res
           .status(200)
           .json({ success: "Booking created successfully: ", newBooking });
@@ -24,7 +26,7 @@ router.post("/new", (req, res) => {
     .catch((error) => console.log(error));
 });
 
-/**********************************
+/************************************
  *  GET - /booking/getCustomerBookings
  ************************************/
 router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
@@ -36,7 +38,9 @@ router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
-      console.log(sessionFound.userId);
+      if (!sessionFound) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
       Booking.find({
         $and: [
           { userId: sessionFound.userId },
@@ -55,6 +59,47 @@ router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
     .catch((error) => console.log(error));
 });
 
+/************************************
+ *  GET - /booking/getBookingsByDate
+ ************************************/
+router.get("/searchOpenBookings", (req, res) => {
+  console.log(req.headers);
+  const { accesstoken, cottagenumber, category } = req.headers;
+  const cottageNumber = parseInt(cottagenumber, 10);
+  console.log("/booking/searchOpenBookings => ", typeof cottageNumber);
+
+  Session.findById({ _id: accesstoken })
+    .then((sessionFound) => {
+      if (!sessionFound) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
+      Cottage.find({ cottagetype: category }, { _id: 1 }).then((response) => {
+        if (!response) {
+          return res
+            .status(200)
+            .json({ errorMessage: "Invalid cottage category" });
+        } else {
+          const [{ _id: cottageId }] = response;
+          Booking.find({
+            $and: [{ cottageId }, { cottageNumber }, { bookingstatus: "open" }],
+          }).then((bookingsFound) => {
+            if (!bookingsFound) {
+              return res
+                .status(200)
+                .json({ errorMessage: "There are no open bookings" });
+            } else {
+              // console.log(bookingsFound);
+              return res
+                .status(200)
+                .json({ success: "Booking search Result", bookingsFound });
+            }
+          });
+        }
+      });
+    })
+    .catch((error) => console.log(error));
+});
+
 /**********************************
  *  GET - /booking/cancel
  ************************************/
@@ -64,14 +109,16 @@ router.delete("/cancel/:id", (req, res) => {
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
-      console.log(sessionFound.userId);
+      if (!sessionFound) {
+        return res.status(200).json({ errorMessage: "session not updated " });
+      }
       Booking.findByIdAndUpdate(
         { _id: req.params.id },
         { bookingstatus: "cancel" },
         { new: true }
       ).then((updatedbooking) => {
         if (updatedbooking) {
-          res
+          return res
             .status(200)
             .json({ success: "Result of cancellation", updatedbooking });
         }

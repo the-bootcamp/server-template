@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/resortzy";
-
+const Session = require("../models/Session.model");
 mongoose
   .connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -17,3 +17,7 @@ mongoose
     );
     process.exit(1);
   });
+
+// Session.deleteMany()
+//   .then((resDelete) => console.log("Sessions are cleared .... "))
+//   .catch((error) => console.log("error in clearing sessions"));

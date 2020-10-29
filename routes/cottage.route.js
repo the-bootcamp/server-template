@@ -129,14 +129,11 @@ router.delete("/deleteCategory/:id", (req, res) => {
       if (!sessionFromDB) {
         return res.status(200).json({ errorMessage: "session not updated " });
       }
-      Cottage.findByIdAndDelete({ _id: req.params.id }).then(
-        (deletedCottage) => {
-          // console.log(deletedCottage);
-          res.status(200).json({
-            success: "Successfully deleted the cottage category",
-            deletedCottage,
-          });
-        }
+      Cottage.findByIdAndDelete({ _id: req.params.id }).then((deletedCottage) =>
+        res.status(200).json({
+          success: "Successfully deleted the cottage category",
+          deletedCottage,
+        })
       );
     })
     .catch((error) =>
@@ -204,16 +201,15 @@ router.post("/search", (req, res) => {
   console.log(" ************************************");
   console.log("/cottage/search => ", req.headers.accesstoken);
   console.log("cottage/search: ", req.body);
-  const {
+  let {
     checkindate: reqchkin,
     checkoutdate: reqchkout,
     defaultcottage,
     cottageId,
   } = req.body;
 
-  console.log(fixTheDate(reqchkin));
-  // console.log(new Date(new Date(reqchkin).toLocaleDateString("de-DE")));
-  // return res.status(200).json(true);
+  reqchkin = fixTheDate(reqchkin);
+  reqchkout = fixTheDate(reqchkout);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
@@ -242,7 +238,7 @@ router.post("/search", (req, res) => {
       })
         .populate("cottageId")
         .then((populatedBookigns) => {
-          // console.log(populatedBookigns);
+          console.log(populatedBookigns);
           const filteredBookings = populatedBookigns
             .filter((ele) => ele.cottageId.cottagetype === defaultcottage)
             .map(({ cottageId: { _id }, cottageNumber }) => ({
