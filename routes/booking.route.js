@@ -60,7 +60,7 @@ router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
 });
 
 /************************************
- *  GET - /booking/getBookingsByDate
+ *  GET - /booking/searchOpenBookings
  ************************************/
 router.get("/searchOpenBookings", (req, res) => {
   console.log(req.headers);
@@ -82,18 +82,20 @@ router.get("/searchOpenBookings", (req, res) => {
           const [{ _id: cottageId }] = response;
           Booking.find({
             $and: [{ cottageId }, { cottageNumber }, { bookingstatus: "open" }],
-          }).then((bookingsFound) => {
-            if (!bookingsFound) {
-              return res
-                .status(200)
-                .json({ errorMessage: "There are no open bookings" });
-            } else {
-              // console.log(bookingsFound);
-              return res
-                .status(200)
-                .json({ success: "Booking search Result", bookingsFound });
-            }
-          });
+          })
+            .populate("cottageId")
+            .then((bookingsFound) => {
+              if (!bookingsFound) {
+                return res
+                  .status(200)
+                  .json({ errorMessage: "There are no open bookings" });
+              } else {
+                // console.log(bookingsFound);
+                return res
+                  .status(200)
+                  .json({ success: "Booking search Result", bookingsFound });
+              }
+            });
         }
       });
     })
@@ -101,20 +103,49 @@ router.get("/searchOpenBookings", (req, res) => {
 });
 
 /**********************************
- *  GET - /booking/cancel
+ *  DELETE - /booking/cancel
  ************************************/
-router.delete("/cancel/:id", (req, res) => {
-  console.log("/booking/cancel => ", req.headers);
-  console.log("bookings/cancel: ", req.params.id);
+// router.delete("/cancel/:id", (req, res) => {
+//   console.log("/booking/cancel => ", req.headers);
+//   console.log("bookings/cancel: ", req.params.id);
+
+//   Session.findById({ _id: req.headers.accesstoken })
+//     .then((sessionFound) => {
+//       if (!sessionFound) {
+//         return res.status(200).json({ errorMessage: "session not updated " });
+//       }
+//       Booking.findByIdAndUpdate(
+//         { _id: req.params.id },
+//         { bookingstatus: "cancel" },
+//         { new: true }
+//       ).then((updatedbooking) => {
+//         if (updatedbooking) {
+//           return res
+//             .status(200)
+//             .json({ success: "Result of cancellation", updatedbooking });
+//         }
+//       });
+//     })
+//     .catch((error) => console.log(error));
+// });
+
+/**********************************
+ *  POST - /booking/cancel
+ ************************************/
+router.post("/changeStatus/:id", (req, res) => {
+  console.log("/booking/changeStatus => ", req.headers);
+  console.log("bookings/changeStatus: ", req.params.id);
+  console.log("bookings/changeStatus: ", req.body);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
       if (!sessionFound) {
         return res.status(200).json({ errorMessage: "session not updated " });
       }
+
       Booking.findByIdAndUpdate(
         { _id: req.params.id },
-        { bookingstatus: "cancel" },
+        { bookingstatus: req.body.status },
         { new: true }
       ).then((updatedbooking) => {
         if (updatedbooking) {
