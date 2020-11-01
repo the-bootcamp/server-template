@@ -2,7 +2,7 @@
 
 const { Schema, model } = require("mongoose");
 
-const cottageSchema = new Schema(
+const membershipSchema = new Schema(
   {
     cottagetype: {
       type: String,
@@ -14,14 +14,13 @@ const cottageSchema = new Schema(
       required: true,
       enum: ["silver", "gold", "platinum"],
     },
-    cottageimages: { type: [] },
-    costperday: { type: Number },
+    daysfreestay: { type: Number },
+    costperyear: { type: Number },
     description: { type: String },
-    totalcottages: [{ type: Number }],
     amenities: [{ type: String }],
   },
   { timestamps: true }
 );
-const Cottage = model("cottages", cottageSchema);
+const Membership = model("membership", membershipSchema);
 
-module.exports = Cottage;
+module.exports = Membership;

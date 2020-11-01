@@ -11,7 +11,7 @@ const authRouter = require("./routes/auth.route");
 const userRouter = require("./routes/user.route");
 const cottageRouter = require("./routes/cottage.route");
 const bookingRouter = require("./routes/booking.route");
-
+const membershipRouter = require("./routes/membership.route");
 const app = express();
 
 //CORS configuration
@@ -32,5 +32,5 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/cottage", cottageRouter);
 app.use("/booking", bookingRouter);
-
+app.use("/membership", membershipRouter);
 module.exports = app;

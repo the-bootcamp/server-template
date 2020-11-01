@@ -2,6 +2,8 @@ const app = require("express");
 const router = new app.Router();
 const Subscriptions = require("../models/Subscription.model");
 const mongoose = require("mongoose");
+const Session = require("../models/Session.model");
+const User = require("../models/User.model");
 
 /**********************************
  *  POST - /user/edit
@@ -17,11 +19,17 @@ router.post("/edit", (req, res) => {
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (sessionFromDB) {
-        User.findByIdAndUpdate(sessionFromDB.userId, body, {
-          new: true,
-        }).then((userInfo) =>
-          res.status(200).json({ success: "user profile updated ", userInfo })
-        );
+        User.findByIdAndUpdate(sessionFromDB.userId, body, { new: true })
+          .then((userInfo) => {
+            return res
+              .status(200)
+              .json({ success: "user profile updated ", userInfo });
+          })
+          .catch((error) =>
+            res
+              .status(200)
+              .json({ errorMessage: "Session is not active", error })
+          );
       } else {
         return res.status(200).json({ errorMessage: "session not updated " });
       }

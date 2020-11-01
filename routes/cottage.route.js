@@ -36,15 +36,15 @@ router.post("/upload", uploadCloud.array("cottageimages", 5), (req, res) => {
 router.post("/new", (req, res, next) => {
   console.log(" cottage/new =>", req.body);
   console.log("/cottage/new =>", req.headers.accesstoken);
-  let {
-    cottagetype,
-    cottageimages,
-    costperday,
-    description,
-    // cottagestatus,
-  } = req.body;
+  let { cottagetype, cottageimages, costperday, description } = req.body;
 
-  // cottagestatus = cottagestatus ? cottagestatus : "free";
+  const membership =
+    cottagetype === "standard"
+      ? "silver"
+      : cottagetype === "classic"
+      ? "gold"
+      : "platinum";
+
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (!sessionFromDB) {
@@ -57,6 +57,7 @@ router.post("/new", (req, res, next) => {
             cottageimages,
             costperday,
             description,
+            membership,
           });
           newCottage.totalcottages.push(1);
           newCottage
@@ -175,7 +176,7 @@ router.post("/update/:id", (req, res, next) => {
 });
 
 /**********************************s
- *  POST - /cottage/get
+ *  GET - /cottage/get
  ************************************/
 router.get("/all", (req, res, next) => {
   console.log("/cottage/all =>", req.headers.accesstoken);
