@@ -16,9 +16,12 @@ const membershipSchema = new Schema(
     },
     daysfreestay: { type: Number },
     costperyear: { type: Number },
+    validity: { type: Number },
     description: { type: String },
     amenities: [{ type: String }],
+    imgurl: { type: String },
   },
+
   { timestamps: true }
 );
 const Membership = model("membership", membershipSchema);

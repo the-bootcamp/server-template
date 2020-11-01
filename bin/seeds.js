@@ -18,6 +18,9 @@ const memberships = [
       "Free WiFi",
       "Kids Club",
     ],
+    validity: 2,
+    imgurl:
+      "https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604244677/resortzy-cottage-pictures/oyicoqqehh7mi3vv478r.png",
   },
   // GOLD
   {
@@ -35,6 +38,9 @@ const memberships = [
       "Fitness Center",
       "Concierge",
     ],
+    validity: 3,
+    imgurl:
+      "https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604244677/resortzy-cottage-pictures/xhdqvrqljnxlqxn6qsgl.png",
   },
   // PLATINUM
   {
@@ -54,6 +60,9 @@ const memberships = [
       "Surfing Lessons",
       "Bar & Lounge",
     ],
+    validity: 4,
+    imgurl:
+      "https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604244677/resortzy-cottage-pictures/dgjfvtqj68ninrvjq31q.png",
   },
 ];
 
