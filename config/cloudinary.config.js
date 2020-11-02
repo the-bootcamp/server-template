@@ -18,6 +18,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "resortzy-cottage-pictures",
     allowed_formats: ["jpg", "png"],
+    // public_id: (req, file) => "some_unique_id", // added
   },
 });
 

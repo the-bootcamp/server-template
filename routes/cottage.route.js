@@ -10,11 +10,40 @@ const Bookings = require("../models/Booking.model");
 const { json } = require("express");
 const { fixTheDate } = require("../utils");
 
+// const { v2: cloudinary } = require("cloudinary");
+
+// router.delete("/deletePicture", async (req, res) => {
+//   cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_NAME,
+//     api_key: process.env.CLOUDINARY_KEY,
+//     api_secret: process.env.CLOUDINARY_SECRET,
+//   });
+
+//   try {
+//     // Find user by id
+//     // let user = await User.findById(req.params.id);
+//     // Delete image from cloudinary
+//     const url1 =
+//       "https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604275713/resortzy-cottage-pictures/nmuk8if71lyi0o08ehxv.png";
+//     const cloudinary_id = url1
+//       .split("/")
+//       [url1.split("/").length - 1].split(".")[0];
+
+//     console.log(cloudinary_id);
+//     await cloudinary.uploader.destroy(cloudinary_id);
+//     // Delete user from db
+//     // await user.remove();
+//     // res.json(user);
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+
 /**********************************
  *  POST - /cottage/upload
  ************************************/
-router.post("/upload", uploadCloud.array("cottageimages", 5), (req, res) => {
-  console.log("cottage/upload", req.files.length);
+router.post("/upload", uploadCloud.array("cottageimages", 6), (req, res) => {
+  console.log("cottage/upload", req.files.filename);
   console.log("/cottage/upload =>", req.headers.accesstoken);
 
   Session.findById({ _id: req.headers.accesstoken })
@@ -206,8 +235,12 @@ router.post("/search", (req, res) => {
     checkindate: reqchkin,
     checkoutdate: reqchkout,
     defaultcottage,
-    cottageId,
+    // cottageId,
   } = req.body;
+
+  if (!reqchkin || !reqchkout || !defaultcottage) {
+    return res.status(200).json({ error: "Invalid inputs for searching " });
+  }
 
   reqchkin = fixTheDate(reqchkin);
   reqchkout = fixTheDate(reqchkout);
@@ -215,7 +248,7 @@ router.post("/search", (req, res) => {
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
       if (!sessionFound) {
-        return req.status(200).json({ error: "Invalid session taoken" });
+        return res.status(200).json({ error: "Invalid session taoken" });
       }
       Bookings.find({
         $and: [
@@ -239,7 +272,7 @@ router.post("/search", (req, res) => {
       })
         .populate("cottageId")
         .then((populatedBookigns) => {
-          console.log(populatedBookigns);
+          console.log("populatedBookigns:  ", populatedBookigns);
           const filteredBookings = populatedBookigns
             .filter((ele) => ele.cottageId.cottagetype === defaultcottage)
             .map(({ cottageId: { _id }, cottageNumber }) => ({
@@ -248,16 +281,18 @@ router.post("/search", (req, res) => {
             }));
           console.log(filteredBookings);
           Cottage.find(
-            { cottagetype: defaultcottage },
-            { _id: 0, totalcottages: 1 }
+            { cottagetype: defaultcottage }
+            // { _id: 0, totalcottages: 1 }
           )
             .then((cottagelist) => {
-              //5f941d4940d191086d38128b
               console.log(cottagelist);
-              // console.log(cottagelist[0].totalcottages);
+              const { totalcottages } = cottagelist[0];
+              console.log(totalcottages);
               if (
-                cottagelist &&
-                cottagelist[0].totalcottages.length === filteredBookings.length
+                // cottagelist &&
+                // cottagelist[0].totalcottages.length === filteredBookings.length
+                totalcottages &&
+                totalcottages.length === filteredBookings.length
               ) {
                 // There are no bookings availf gor the date
                 console.log("cottages NOT avaialble for the requested dates");
@@ -266,7 +301,8 @@ router.post("/search", (req, res) => {
                 });
               } else {
                 //  booking possible.
-                const cottagesFree = cottagelist[0].totalcottages.filter(
+                // const cottagesFree = cottagelist[0].totalcottages.filter(
+                const cottagesFree = totalcottages.filter(
                   (ele) =>
                     !filteredBookings
                       .map((book) => book.cottageNumber)
@@ -274,7 +310,8 @@ router.post("/search", (req, res) => {
                 );
                 const cottagesAvailability = {
                   cottagesFree,
-                  cottageId,
+                  // cottageId,
+                  cottagelist: cottagelist[0],
                   cottageType: defaultcottage,
                   checkindate: reqchkin,
                   checkoutdate: reqchkout,

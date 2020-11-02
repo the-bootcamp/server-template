@@ -37,10 +37,10 @@ const userSchema = new Schema(
       type: String,
       enum: ["silver", "gold", "platinum"],
     },
-    defaultcottage: {
-      type: String,
-      enum: ["standard", "classic", "superior"],
-    },
+    // defaultcottage: {
+    //   type: String,
+    //   enum: ["standard", "classic", "superior"],
+    // },
   },
   {
     timestamps: true,

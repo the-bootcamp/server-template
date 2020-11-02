@@ -9,16 +9,16 @@ const cottageSchema = new Schema(
       required: true,
       enum: ["standard", "classic", "superior"],
     },
-    membership: {
-      type: String,
-      required: true,
-      enum: ["silver", "gold", "platinum"],
-    },
-    cottageimages: { type: [] },
+    // membership: {
+    //   type: String,
+    //   required: true,
+    //   enum: ["silver", "gold", "platinum"],
+    // },
+    cottageimages: [{ type: String }],
     costperday: { type: Number },
     description: { type: String },
     totalcottages: [{ type: Number }],
-    amenities: [{ type: String }],
+    facilities: [{ type: String }],
   },
   { timestamps: true }
 );

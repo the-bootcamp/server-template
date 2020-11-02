@@ -7,6 +7,7 @@ const saltRounds = 10;
 const User = require("../models/User.model");
 const Session = require("../models/Session.model");
 const mongoose = require("mongoose");
+const MemberShip = require("../models/Membership.model");
 
 /**********************************
  *  POST - /auth/signup
@@ -85,9 +86,35 @@ router.post("/login", (req, res, next) => {
         Session.create({
           userId: user._id,
           createdAt: Date.now(),
-        }).then((session) =>
-          res.status(200).json({ accessToken: session._id, user })
-        );
+        }).then((session) => {
+          if (!session) {
+            return res
+              .status(200)
+              .json({ errorMessage: "Error is retrieving the session" });
+          }
+          // return res.status(200).json({ accessToken: session._id, user });
+          if (user.userrole === "customer") {
+            MemberShip.findOne(
+              { membership: user.membership },
+              { _id: 0, cottagetype: 1 }
+            ).then((cottagetype) => {
+              return res.status(200).json({
+                success: "user profile updated ",
+                accessToken: session._id,
+                user: {
+                  ...user.toObject(),
+                  ...cottagetype.toObject(),
+                },
+              });
+            });
+          } else {
+            return res.status(200).json({
+              success: "user profile updated ",
+              accessToken: session._id,
+              user,
+            });
+          }
+        });
       } else {
         return res.status(200).json({ errorMessage: "Incorrect password." });
       }
@@ -124,11 +151,37 @@ router.get("/session/:accessToken", (req, res) => {
         return res.status(200).json({
           errorMessage: "Session does not exist",
         });
+      }
+      console.log(" validate session: => ", session);
+      console.log(" validate session: => ", session.userId.membership);
+      // else {
+      let userId = {};
+      if (session.userId.userrole === "customer") {
+        MemberShip.findOne(
+          { membership: session.userId.membership },
+          { _id: 0, cottagetype: 1 }
+        ).then((cottagetype) => {
+          return res.status(200).json({
+            success: "user profile updated ",
+            accessToken: session._id,
+            userId: {
+              ...session.userId.toObject(),
+              ...cottagetype.toObject(),
+            },
+          });
+        });
       } else {
         return res.status(200).json({
-          session,
+          success: "user profile updated ",
+          accessToken: session._id,
+          userId: session.userId,
         });
       }
+
+      // return res.status(200).json({
+      //   session,
+      // });
+      // }
     })
     .catch((err) => res.status(500).json({ errorMessage: err }));
 });
