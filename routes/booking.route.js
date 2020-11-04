@@ -4,6 +4,7 @@ const Session = require("../models/Session.model");
 const Booking = require("../models/Booking.model");
 const User = require("../models/User.model");
 const Cottage = require("../models/Cottage.model");
+const { fixTheDate } = require("../utils");
 
 /**********************************
  *  POST - /booking/new
@@ -63,10 +64,9 @@ router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
  *  GET - /booking/searchOpenBookings
  ************************************/
 router.get("/searchOpenBookings", (req, res) => {
-  console.log(req.headers);
+  console.log("/booking/searchOpenBookings => ", req.headers);
   const { accesstoken, cottagenumber, category } = req.headers;
   const cottageNumber = parseInt(cottagenumber, 10);
-  console.log("/booking/searchOpenBookings => ", typeof cottageNumber);
 
   Session.findById({ _id: accesstoken })
     .then((sessionFound) => {
@@ -133,9 +133,22 @@ router.get("/searchOpenBookings", (req, res) => {
  *  POST - /booking/cancel
  ************************************/
 router.post("/changeStatus/:id", (req, res) => {
-  console.log("/booking/changeStatus => ", req.headers);
+  console.log("/booking/changeStatus => ", req.headers.accesstoken);
   console.log("bookings/changeStatus: ", req.params.id);
   console.log("bookings/changeStatus: ", req.body);
+
+  req.body.checkindate = req.body.checkindate
+    ? fixTheDate(req.body.checkindate)
+    : "";
+  req.body.checkoutdate = req.body.checkoutdate
+    ? fixTheDate(req.body.checkoutdate)
+    : "";
+
+  const body = Object.fromEntries(
+    Object.entries(req.body).filter((el) => el[1])
+  );
+
+  // reqchkin = fixTheDate(reqchkin);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
@@ -145,7 +158,8 @@ router.post("/changeStatus/:id", (req, res) => {
 
       Booking.findByIdAndUpdate(
         { _id: req.params.id },
-        { bookingstatus: req.body.status },
+        // { bookingstatus: req.body.status },
+        body,
         { new: true }
       ).then((updatedbooking) => {
         if (updatedbooking) {

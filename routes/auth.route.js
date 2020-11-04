@@ -126,7 +126,7 @@ router.post("/login", (req, res, next) => {
  *  DELETE - /auth/logout
  ************************************/
 router.delete("/logout/:id", (req, res) => {
-  console.log("route => /logout: ", req.params.id);
+  //   console.log("route => /logout: ", req.params.id);
   const { id } = req.params;
 
   Session.findByIdAndRemove({ _id: id })
@@ -142,7 +142,7 @@ router.delete("/logout/:id", (req, res) => {
 /**********************************
  *  POST - /auth/session
  ************************************/
-router.get("/session/:accessToken", (req, res) => {
+router.get("/validatesession/:accessToken", (req, res) => {
   const { accessToken } = req.params;
   Session.findById({ _id: accessToken })
     .populate("userId")
@@ -152,8 +152,8 @@ router.get("/session/:accessToken", (req, res) => {
           errorMessage: "Session does not exist",
         });
       }
-      console.log(" validate session: => ", session);
-      console.log(" validate session: => ", session.userId.membership);
+      // console.log(" validate session: => ", session);
+      // console.log(" validate session: => ", session.userId.membership);
       // else {
       let userId = {};
       if (session.userId.userrole === "customer") {

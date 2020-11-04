@@ -6,7 +6,7 @@ const MemberShip = require("../models/Membership.model");
  *  GET - /membership/get
  ************************************/
 router.get("/all", (req, res, next) => {
-  console.log("/membership/all =>");
+  // console.log("/membership/all =>");
 
   MemberShip.find()
     .then((membershipInfo) =>

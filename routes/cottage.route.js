@@ -272,7 +272,7 @@ router.post("/search", (req, res) => {
       })
         .populate("cottageId")
         .then((populatedBookigns) => {
-          console.log("populatedBookigns:  ", populatedBookigns);
+          // console.log("populatedBookigns:  ", populatedBookigns);
           const filteredBookings = populatedBookigns
             .filter((ele) => ele.cottageId.cottagetype === defaultcottage)
             .map(({ cottageId: { _id }, cottageNumber }) => ({
@@ -285,9 +285,9 @@ router.post("/search", (req, res) => {
             // { _id: 0, totalcottages: 1 }
           )
             .then((cottagelist) => {
-              console.log(cottagelist);
+              // console.log(cottagelist);
               const { totalcottages } = cottagelist[0];
-              console.log(totalcottages);
+              // console.log(totalcottages);
               if (
                 // cottagelist &&
                 // cottagelist[0].totalcottages.length === filteredBookings.length

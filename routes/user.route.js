@@ -9,7 +9,7 @@ const MemberShip = require("../models/Membership.model");
  *  POST - /user/edit
  ************************************/
 router.post("/edit", (req, res) => {
-  console.log("/user/edit =>", req.headers.accesstoken);
+  // console.log("/user/edit =>", req.headers.accesstoken);
   console.log("/user/edit =>", req.body);
 
   const body = Object.fromEntries(
@@ -51,7 +51,7 @@ router.post("/edit", (req, res) => {
  *  POST - /user/subscribe/:email
  ************************************/
 router.post("/subscribe/:email", (req, res, next) => {
-  console.log(req.params.email);
+  // console.log(req.params.email);
   if (!req.params.email) {
     return res.status(200).json({
       errorMessage: "Email-Id is empty.",
