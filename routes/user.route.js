@@ -80,5 +80,35 @@ router.post("/subscribe/:email", (req, res, next) => {
     }); // close .catch()
 });
 
+// router.post("/sendemail", async (req, res) => {
+//   let transporter = nodemailer.createTransport({
+//     host: "smtp.ethereal.email",
+//     port: 587,
+//     secure: false, // true for 465, false for other ports
+//     auth: {
+//       user: "kolby.lynch@ethereal.email", // generated ethereal user
+//       pass: "k64yWPtNZNz21StTHn", // generated ethereal password
+//     },
+//   });
+
+//   const mesg = {
+//     from: "the express app expressapp@example.com",
+//     to: "dymmyemail@test.com",
+//     subject: "sub: nodemailer testing",
+//     text: "Hello world!!!",
+//     html: "<b>Hello world?</b>",
+//   };
+
+//   transporter.sendMail(mesg, function (error, info) {
+//     if (error) {
+//       console.log(error);
+//     } else {
+//       console.log("Email sent: " + info.response);
+//     }
+//   });
+
+//   res.send("Email sent ");
+// });
+
 /**  */
 module.exports = router;

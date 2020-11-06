@@ -8,6 +8,7 @@ const User = require("../models/User.model");
 const Session = require("../models/Session.model");
 const mongoose = require("mongoose");
 const MemberShip = require("../models/Membership.model");
+const { sendRegistrationemail } = require("../utils");
 
 /**********************************
  *  POST - /auth/signup
@@ -98,8 +99,9 @@ router.post("/login", (req, res, next) => {
               { membership: user.membership },
               { _id: 0, cottagetype: 1 }
             ).then((cottagetype) => {
+              // sendRegistrationemail();
               return res.status(200).json({
-                success: "user profile updated ",
+                success: "user login success",
                 accessToken: session._id,
                 user: {
                   ...user.toObject(),
@@ -109,7 +111,7 @@ router.post("/login", (req, res, next) => {
             });
           } else {
             return res.status(200).json({
-              success: "user profile updated ",
+              success: "manager login success",
               accessToken: session._id,
               user,
             });
