@@ -100,7 +100,6 @@ router.post("/new", (req, res, next) => {
           cottageFound.totalcottages.push(
             cottageFound.totalcottages.length + 1
           );
-
           cottageFound
             .save()
             .then((addRes) =>
@@ -152,8 +151,8 @@ router.delete("/deleteNum/:id", (req, res) => {
  *  POST - /cottage/deleteCategory/:id
  ************************************/
 router.delete("/deleteCategory/:id", (req, res) => {
-  console.log("/cottage/deleteCategory =>", req.headers.accesstoken);
-  console.log("/cottage/deleteCategory =>", req.params.id);
+  // console.log("/cottage/deleteCategory =>", req.headers.accesstoken);
+  // console.log("/cottage/deleteCategory =>", req.params.id);
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (!sessionFromDB) {
@@ -175,9 +174,9 @@ router.delete("/deleteCategory/:id", (req, res) => {
  *  POST - /cottage/update
  ************************************/
 router.post("/update/:id", (req, res, next) => {
-  console.log("/cottage/update =>", req.headers.accesstoken);
-  console.log("/cottage/update =>", req.body);
-  console.log("/cottage/update =>", req.params.id);
+  // console.log("/cottage/update =>", req.headers.accesstoken);
+  // console.log("/cottage/update =>", req.body);
+  // console.log("/cottage/update =>", req.params.id);
 
   const body = Object.fromEntries(
     Object.entries(req.body).filter((el) => el[1])
@@ -208,7 +207,7 @@ router.post("/update/:id", (req, res, next) => {
  *  GET - /cottage/get
  ************************************/
 router.get("/all", (req, res, next) => {
-  console.log("/cottage/all =>", req.headers.accesstoken);
+  // console.log("/cottage/all =>", req.headers.accesstoken);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
@@ -228,8 +227,8 @@ router.get("/all", (req, res, next) => {
  *  POST - /cottage/search
  ************************************/
 router.post("/search", (req, res) => {
-  console.log(" ************************************");
-  console.log("/cottage/search => ", req.headers.accesstoken);
+  // console.log("/cottage/search => ", req.headers.accesstoken);
+
   console.log("cottage/search: ", req.body);
   let {
     checkindate: reqchkin,
@@ -242,8 +241,8 @@ router.post("/search", (req, res) => {
     return res.status(200).json({ error: "Invalid inputs for searching " });
   }
 
-  reqchkin = fixTheDate(reqchkin);
-  reqchkout = fixTheDate(reqchkout);
+  // reqchkin = fixTheDate(reqchkin);
+  // reqchkout = fixTheDate(reqchkout);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
@@ -259,6 +258,8 @@ router.post("/search", (req, res) => {
                   { checkoutdate: { $gte: new Date(reqchkin) } },
                   { checkindate: { $lte: new Date(reqchkin) } },
                 ],
+              },
+              {
                 $and: [
                   { checkoutdate: { $gte: new Date(reqchkout) } },
                   { checkindate: { $lte: new Date(reqchkout) } },
@@ -267,19 +268,19 @@ router.post("/search", (req, res) => {
             ],
           },
           { bookingstatus: "open" },
-          { userId: sessionFound.userId },
+          // { userId: sessionFound.userId },
         ],
       })
         .populate("cottageId")
         .then((populatedBookigns) => {
-          // console.log("populatedBookigns:  ", populatedBookigns);
+          console.log("populatedBookigns:  ", populatedBookigns);
           const filteredBookings = populatedBookigns
             .filter((ele) => ele.cottageId.cottagetype === defaultcottage)
             .map(({ cottageId: { _id }, cottageNumber }) => ({
               _id,
               cottageNumber,
             }));
-          console.log(filteredBookings);
+          console.log("filteredBookings: ", filteredBookings);
           Cottage.find(
             { cottagetype: defaultcottage }
             // { _id: 0, totalcottages: 1 }
@@ -287,7 +288,7 @@ router.post("/search", (req, res) => {
             .then((cottagelist) => {
               // console.log(cottagelist);
               const { totalcottages } = cottagelist[0];
-              // console.log(totalcottages);
+              console.log("totalcottages:", totalcottages);
               if (
                 // cottagelist &&
                 // cottagelist[0].totalcottages.length === filteredBookings.length
@@ -317,7 +318,7 @@ router.post("/search", (req, res) => {
                   checkoutdate: reqchkout,
                 };
                 console.group("cottagesFree: ", cottagesFree);
-                console.log("cottages  ARE avaialble for the requested dates");
+                // console.log("cottages  ARE avaialble for the requested dates");
                 return res.status(200).json({
                   success: "cottages availbe for the requested dates",
                   cottagesAvailability,
@@ -334,8 +335,8 @@ router.post("/search", (req, res) => {
  *  GET - /cottage/get/:id
  ************************************/
 router.get("/get/:type", (req, res) => {
-  console.log("/cottage/get =>", req.headers.accesstoken);
-  console.log("/cottage/get =>", req.params.type);
+  // console.log("/cottage/get =>", req.headers.accesstoken);
+  // console.log("/cottage/get =>", req.params.type);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {

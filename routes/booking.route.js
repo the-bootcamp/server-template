@@ -10,15 +10,38 @@ const { fixTheDate } = require("../utils");
  *  POST - /booking/new
  ************************************/
 router.post("/new", (req, res) => {
-  console.log("/booking/new => ", req.headers.accesstoken);
-  console.log("bookings/new: ", req.body);
+  // console.log("/booking/new => ", req.headers.accesstoken);
+  // console.log("bookings/new: ", req.body);
+
+  req.body.checkindate = fixTheDate(req.body.checkindate);
+  req.body.checkoutdate = fixTheDate(req.body.checkoutdate);
+
+  console.log("bookings/new: ", typeof req.body.checkindate);
+  const {
+    userId,
+    checkindate,
+    checkoutdate,
+    bookingdate,
+    cottageId,
+    cottageNumber,
+    bookingstatus,
+  } = req.body;
+  const newBooking = {
+    userId,
+    checkindate: new Date(checkindate),
+    checkoutdate: new Date(checkoutdate),
+    bookingdate,
+    cottageId,
+    cottageNumber,
+    bookingstatus,
+  };
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
       if (!sessionFound) {
         return res.status(200).json({ errorMessage: "session not updated " });
       }
-      Booking.create(req.body).then((newBooking) => {
+      Booking.create(newBooking).then((newBooking) => {
         return res
           .status(200)
           .json({ success: "Booking created successfully: ", newBooking });
@@ -31,8 +54,8 @@ router.post("/new", (req, res) => {
  *  GET - /booking/getCustomerBookings
  ************************************/
 router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
-  console.log("/booking/getCustomerBookings => ", req.headers.accesstoken);
-  console.log("bookings/getCustomerBookings: ", req.params.bookingstatus);
+  // console.log("/booking/getCustomerBookings => ", req.headers.accesstoken);
+  // console.log("bookings/getCustomerBookings: ", req.params.bookingstatus);
 
   const searchQuery =
     req.params.bookingstatus === "all" ? "" : req.params.bookingstatus;
@@ -64,7 +87,7 @@ router.get("/getCustomerBookings/:bookingstatus", (req, res) => {
  *  GET - /booking/searchOpenBookings
  ************************************/
 router.get("/searchOpenBookings", (req, res) => {
-  console.log("/booking/searchOpenBookings => ", req.headers);
+  // console.log("/booking/searchOpenBookings => ", req.headers);
   const { accesstoken, cottagenumber, category } = req.headers;
   const cottageNumber = parseInt(cottagenumber, 10);
 
@@ -137,12 +160,12 @@ router.post("/changeStatus/:id", (req, res) => {
   console.log("bookings/changeStatus: ", req.params.id);
   console.log("bookings/changeStatus: ", req.body);
 
-  req.body.checkindate = req.body.checkindate
-    ? fixTheDate(req.body.checkindate)
-    : "";
-  req.body.checkoutdate = req.body.checkoutdate
-    ? fixTheDate(req.body.checkoutdate)
-    : "";
+  // req.body.checkindate = req.body.checkindate
+  //   ? fixTheDate(req.body.checkindate)
+  //   : "";
+  // req.body.checkoutdate = req.body.checkoutdate
+  //   ? fixTheDate(req.body.checkoutdate)
+  //   : "";
 
   const body = Object.fromEntries(
     Object.entries(req.body).filter((el) => el[1])
