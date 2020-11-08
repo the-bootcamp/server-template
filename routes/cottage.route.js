@@ -42,9 +42,9 @@ const { fixTheDate } = require("../utils");
 /**********************************
  *  POST - /cottage/upload
  ************************************/
-router.post("/upload", uploadCloud.array("cottageimages", 6), (req, res) => {
-  console.log("cottage/upload", req.files.filename);
+router.post("/upload", uploadCloud.array("cottageimages"), (req, res) => {
   console.log("/cottage/upload =>", req.headers.accesstoken);
+  console.log("cottage/upload", req.files.length);
 
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
