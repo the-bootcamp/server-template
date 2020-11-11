@@ -6,67 +6,6 @@ exports.fixTheDate = (date) => {
 
 exports.sendBookingConfirmation = (BookingInfo, cottageInfo, userInfo) => {
   console.log("sendBookingConfirmation", BookingInfo, userInfo);
-  /**
-{
-    bookingdate: 2020-11-11T10:28:12.194Z,
-    bookingstatus: 'open',
-    _id: 5fabbcbc70fd221160647b04,
-    userId: 5f9f1a3ca9eda106bc4b29dd,
-    checkindate: 2020-11-17T23:00:00.000Z,
-    checkoutdate: 2020-11-17T23:00:00.000Z,
-    cottageId: 5f9fd059297922061372dd5f,
-    cottageNumber: 1,
-    createdAt: 2020-11-11T10:28:12.234Z,
-    updatedAt: 2020-11-11T10:28:12.234Z,
-    __v: 0
-  } {
-    _id: 5f9f1a3ca9eda106bc4b29dd,
-    username: 'AAA aaaa',
-    email: 'aaa@aaa.com',
-    password: '$2a$10$Hq5jWyBU8VDeAYl60FVhuuSB055AX1jvhvScce8kIMl4jFygR/hoy',
-    address: 'zandtong 15 ',
-    phone: 333333,
-    userrole: 'customer',
-    createdAt: 2020-11-01T20:27:40.767Z,
-    updatedAt: 2020-11-09T18:37:04.346Z,
-    __v: 0,
-    membership: 'silver'
-  } 
-  cottageimages: [
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/yu2tzsycskboa6prsvor.jpg',
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/ok27viqqm5b6xczaumhr.jpg',
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/rwkt4izqket3dl8ceozo.jpg',
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/py3q6zti3cogooqev5qc.jpg',
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/djbbrfxjqkjl2gaibnxj.jpg',
-    'https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/pmg8qhc3beit9tg250uk.jpg'
-  ],
-  totalcottages: [ 1, 2, 3 ],
-  facilities: [
-    'Bath amenities',
-    'Bathrobes & slippers',
-    '2-seater sofa',
-    '2 arm chairs',
-    'mini TV',
-    'Alarm clock',
-    '2-chair Dining table',
-    'Electirc cooker (2-burner)',
-    'coffee machine',
-    'Kettle',
-    'Kitchen utensils',
-    'Refrigerator',
-    'wardrobes'
-  ],
-  _id: 5f9fd059297922061372dd5f,
-  ],
-  _id: 5f9fd059297922061372dd5f,
-  cottagetype: 'standard',
-  costperday: 80,
-  description: 'These are our budget cottges with compact rooms and limited space and storage.',
-  createdAt: 2020-11-02T09:24:41.211Z,
-  updatedAt: 2020-11-02T09:31:15.038Z,
-  __v: 3
-}
- */
   const emailcontent = {
     toUser: "",
     subject: "",
@@ -85,18 +24,34 @@ exports.sendBookingConfirmation = (BookingInfo, cottageInfo, userInfo) => {
             <body>
               <div class="col-sm-12 text-center mt-3 p-3 bg-success">
                 <h5>Dear ${userInfo.username},</h5>
-                <h2 class="my-3"> We recieved your payment for the below Booking! <br>
-                  Thank you for choosing Resortzy</h2>
-                <h4> Booking Details:</h4> <br>
-                    ${BookingInfo.checkindate}
+                <h2 style="color:red"> We recieved your payment for the below Booking! <br>
+                  Thank you for choosing Resortzy</h2>       
               </div>`;
-  htmlTemplate += `<hr> <div class="m-2">
-                          <h2 class="text-center">BOOKING SUMMARY </h2>
-                          <h3 class="text-center">Order Id: <p id="order-id"> ${bookId}</p></h3>
-                          </div>`;
+  htmlTemplate += `<h3 style="display:inline;" >Order Id: ${bookId}</h3>`;
+  //  Booking details
+  htmlTemplate += `<div style="margin-left:30%;">
+                          <h2 >BOOKING SUMMARY </h2>
+                            <h4> Check-In Date:   
+                             ${BookingInfo.checkindate.toDateString()} </h4>
+                           </hr>
+                           <h4> Check-Out Date: ${BookingInfo.checkoutdate.toDateString()} </h4>
+                       </hr> 
+ <h4> Date of Booking: ${BookingInfo.bookingdate.toDateString()} </h4>
+ </hr> 
+ <h4> Cottage Number ${cottageInfo.cottagetype}-${
+    BookingInfo.cottageNumber
+  } </h4>
+ </hr> 
+ <h4> Cost per Day: ${cottageInfo.costperday} </h4>
+                            </div>`;
 
-  htmlTemplate += ` <hr> <div class="m-2">
-                <p> Cottage Number: ${cottageInfo}`;
+  // cottage images:
+  htmlTemplate += `<hr>  <div class="row">`;
+  htmlTemplate += cottageInfo.cottageimages.map(
+    (picture) => `<img width="100" height="75"  src=${picture} alt="" />`
+  );
+  htmlTemplate += `</div> </div>`;
+  htmlTemplate += `</div> </body>  </html>`;
   emailcontent.html = htmlTemplate;
   return emailcontent;
 };
@@ -118,7 +73,7 @@ exports.sendEmail = (emailcontent) => {
   };
   let transporter = nodemailer.createTransport(options, null);
   let message = {
-    from: "<manager@resortzy.com>", // Fred Foo 👥 <foo@blurdybloop.com>
+    from: "manager@resortzy.com 👥 <manager@resortzy.com>", //
     to: emailcontent.toUser,
     subject: emailcontent.subject,
     text: emailcontent.text,

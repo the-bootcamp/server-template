@@ -5,10 +5,14 @@ const MemberShip = require("../models/Membership.model");
 /**********************************s
  *  GET - /membership/get
  ************************************/
-router.get("/all", (req, res, next) => {
-  // console.log("/membership/all =>");
+router.get("/:membership", (req, res, next) => {
+  console.log("/membership/membership =>", req.params.membership);
+  const searchQuery =
+    req.params.membership === "all"
+      ? ""
+      : req.params.membership.toLowerCase().trim();
 
-  MemberShip.find()
+  MemberShip.find({ membership: { $regex: searchQuery } })
     .then((membershipInfo) =>
       res
         .status(200)

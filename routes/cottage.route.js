@@ -273,14 +273,14 @@ router.post("/search", (req, res) => {
       })
         .populate("cottageId")
         .then((populatedBookigns) => {
-          console.log("populatedBookigns:  ", populatedBookigns);
+          // console.log("populatedBookigns:  ", populatedBookigns);
           const filteredBookings = populatedBookigns
             .filter((ele) => ele.cottageId.cottagetype === defaultcottage)
             .map(({ cottageId: { _id }, cottageNumber }) => ({
               _id,
               cottageNumber,
             }));
-          console.log("filteredBookings: ", filteredBookings);
+          // console.log("filteredBookings: ", filteredBookings);
           Cottage.find(
             { cottagetype: defaultcottage }
             // { _id: 0, totalcottages: 1 }
@@ -288,7 +288,7 @@ router.post("/search", (req, res) => {
             .then((cottagelist) => {
               // console.log(cottagelist);
               const { totalcottages } = cottagelist[0];
-              console.log("totalcottages:", totalcottages);
+              // console.log("totalcottages:", totalcottages);
               if (
                 // cottagelist &&
                 // cottagelist[0].totalcottages.length === filteredBookings.length
@@ -317,7 +317,7 @@ router.post("/search", (req, res) => {
                   checkindate: reqchkin,
                   checkoutdate: reqchkout,
                 };
-                console.group("cottagesFree: ", cottagesFree);
+                // console.group("cottagesFree: ", cottagesFree);
                 // console.log("cottages  ARE avaialble for the requested dates");
                 return res.status(200).json({
                   success: "cottages availbe for the requested dates",
