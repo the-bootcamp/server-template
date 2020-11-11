@@ -7,17 +7,16 @@ const User = require("../models/User.model");
 const MemberShip = require("../models/Membership.model");
 const bcryptjs = require("bcryptjs");
 const saltRounds = 10;
+const uuid = require("uuid");
 
 const stripe = require("stripe")(process.env.PAYMENT_PRIVATEKEY);
 
-// const nodemailer = require("nodemailer");
-// const mailGun = require("nodemailer-mailgun-transport");
+const nodemailer = require("nodemailer");
 
 /**********************************
  *  POST - /user/edit
  ************************************/
 router.post("/edit", (req, res) => {
-  // console.log("/user/edit =>", req.headers.accesstoken);
   console.log("/user/edit =>", req.body);
 
   const body = Object.fromEntries(
@@ -127,7 +126,6 @@ router.post("/payment", async (req, res) => {
   let status;
   try {
     const { product, token } = req.body;
-
     const customer = await stripe.customers.create({
       email: token.email,
       source: token.id,
@@ -166,35 +164,5 @@ router.post("/payment", async (req, res) => {
   res.json({ error, status });
 });
 
-/**
- */
-router.post("/sendemail", (req, res) => {
-  // console.log(" send email request ... ");
-
-  const auth = {
-    auth: {
-      api_key: "key-93ee67ce13b48562002a34da8df5ef37",
-      domian: "sandboxc404be1d3d254dff83febc409c5042a2.mailgun.org",
-      apiUrl: "https://api.mailgun.net/v3",
-    },
-  };
-  let transporter = nodemailer.createTransport(mailGun(auth));
-  // Message object
-  let message = {
-    from: "mannam.sunitha@gmail.com",
-    to: "sunitha_mannam@yahoo.co.in",
-    subject: "Nodemailer is unicode friendly ✔",
-    text: "Hello to myself!",
-    html: "<p><b>Hello</b> to myself!</p>",
-  };
-
-  transporter.sendMail(message, (err, info) => {
-    if (err) {
-      console.log("Error occurred. " + err);
-      return;
-    }
-    console.log("Message sent: %s", info);
-  });
-});
 /**  */
 module.exports = router;

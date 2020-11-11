@@ -4,14 +4,14 @@ const Session = require("../models/Session.model");
 const Booking = require("../models/Booking.model");
 const User = require("../models/User.model");
 const Cottage = require("../models/Cottage.model");
-const { fixTheDate } = require("../utils");
+const { fixTheDate, sendBookingConfirmation, sendEmail } = require("../utils");
 
 /**********************************
  *  POST - /booking/new
  ************************************/
 router.post("/new", (req, res) => {
-  // console.log("/booking/new => ", req.headers.accesstoken);
-  // console.log("bookings/new: ", req.body);
+  console.log("/booking/new => ", req.headers.accesstoken);
+  console.log("bookings/new: ", req.body);
 
   req.body.checkindate = fixTheDate(req.body.checkindate);
   req.body.checkoutdate = fixTheDate(req.body.checkoutdate);
@@ -28,10 +28,24 @@ router.post("/new", (req, res) => {
       if (!sessionFound) {
         return res.status(200).json({ errorMessage: "session not active " });
       }
-      Booking.create(newBooking).then((newBooking) => {
-        return res
-          .status(200)
-          .json({ success: "Booking created successfully: ", newBooking });
+      // get user info
+      User.findById({ _id: sessionFound.userId }).then((userInfo) => {
+        Booking.create(newBooking).then((newBooking) => {
+          Cottage.findById({ _id: newBooking.cottageId }).then(
+            (cottageinfo) => {
+              const htmlContent = sendBookingConfirmation(
+                newBooking,
+                cottageinfo,
+                userInfo
+              );
+              sendEmail(htmlContent);
+              return res.status(200).json({
+                success: "Booking created successfully: ",
+                newBooking,
+              });
+            }
+          );
+        });
       });
     })
     .catch((error) => console.log(error));
@@ -100,7 +114,6 @@ router.get("/searchOpenBookings", (req, res) => {
                   .status(200)
                   .json({ errorMessage: "There are no open bookings" });
               } else {
-                // console.log(bookingsFound);
                 return res
                   .status(200)
                   .json({ success: "Booking search Result", bookingsFound });

@@ -111,7 +111,7 @@ const cottageList = [
     ],
     costperday: 100,
     description:
-      "These provide views over landscapeed gardens with small seating area",
+      "These have views over landscaped gardens with small seating area",
     facilities: [
       "CHI bath amenities",
       "Bathrobes & slippers",
