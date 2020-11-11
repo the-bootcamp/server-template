@@ -5,6 +5,14 @@ const mongoose = require("mongoose");
 const Session = require("../models/Session.model");
 const User = require("../models/User.model");
 const MemberShip = require("../models/Membership.model");
+const bcryptjs = require("bcryptjs");
+const saltRounds = 10;
+
+const stripe = require("stripe")(process.env.PAYMENT_PRIVATEKEY);
+
+// const nodemailer = require("nodemailer");
+// const mailGun = require("nodemailer-mailgun-transport");
+
 /**********************************
  *  POST - /user/edit
  ************************************/
@@ -15,37 +23,67 @@ router.post("/edit", (req, res) => {
   const body = Object.fromEntries(
     Object.entries(req.body).filter((el) => el[1])
   );
+  let password = req.body.password ? req.body.password : "";
+
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFromDB) => {
       if (sessionFromDB) {
-        User.findByIdAndUpdate(sessionFromDB.userId, body, { new: true })
-          .then((userInfofromDB) => {
-            MemberShip.findOne(
-              { membership: userInfofromDB.membership },
-              { _id: 0, cottagetype: 1 }
-            ).then((cottagetype) => {
-              return res.status(200).json({
-                success: "user profile updated ",
-                userInfo: {
-                  ...userInfofromDB.toObject(),
-                  ...cottagetype.toObject(),
-                },
-              });
+        /** If password is changed ... */
+        if (password) {
+          const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+          if (!regex.test(password)) {
+            return res.status(200).json({
+              errorMessage:
+                "Password needs to have at least 6 chars and must contain at least one number, one lowercase and one uppercase letter.",
             });
-          })
-          .catch((error) =>
-            res
-              .status(200)
-              .json({ errorMessage: "Session is not active", error })
-          );
+          } // password format
+          // generate bycrypt salts
+          bcryptjs
+            .genSalt(saltRounds)
+            .then((salt) => bcryptjs.hash(password, salt))
+            .then((hashedPassword) => {
+              body.password = hashedPassword;
+              updateUser(sessionFromDB, body, res);
+            });
+        }
+        if (!password) {
+          updateUser(sessionFromDB, body, res);
+        }
       } else {
-        return res.status(200).json({ errorMessage: "session not updated " });
+        return res.status(200).json({ errorMessage: "session not active " });
       }
     })
     .catch((error) =>
       res.status(200).json({ errorMessage: "Session is not active", error })
     );
 });
+
+/**
+ *
+ * @param {*} sessionFromDB
+ * @param {*} body
+ * @param {*} res
+ */
+const updateUser = (sessionFromDB, body, res) => {
+  User.findByIdAndUpdate(sessionFromDB.userId, body, { new: true })
+    .then((userInfofromDB) => {
+      MemberShip.findOne(
+        { membership: userInfofromDB.membership },
+        { _id: 0, cottagetype: 1 }
+      ).then((cottagetype) => {
+        return res.status(200).json({
+          success: "user profile updated ",
+          userInfo: {
+            ...userInfofromDB.toObject(),
+            ...cottagetype.toObject(),
+          },
+        });
+      });
+    })
+    .catch((error) =>
+      res.status(200).json({ errorMessage: "Session is not active", error })
+    );
+};
 
 /**********************************
  *  POST - /user/subscribe/:email
@@ -80,35 +118,83 @@ router.post("/subscribe/:email", (req, res, next) => {
     }); // close .catch()
 });
 
-// router.post("/sendemail", async (req, res) => {
-//   let transporter = nodemailer.createTransport({
-//     host: "smtp.ethereal.email",
-//     port: 587,
-//     secure: false, // true for 465, false for other ports
-//     auth: {
-//       user: "kolby.lynch@ethereal.email", // generated ethereal user
-//       pass: "k64yWPtNZNz21StTHn", // generated ethereal password
-//     },
-//   });
+/**
+ */
+router.post("/payment", async (req, res) => {
+  console.log("Request:", req.body);
 
-//   const mesg = {
-//     from: "the express app expressapp@example.com",
-//     to: "dymmyemail@test.com",
-//     subject: "sub: nodemailer testing",
-//     text: "Hello world!!!",
-//     html: "<b>Hello world?</b>",
-//   };
+  let error;
+  let status;
+  try {
+    const { product, token } = req.body;
 
-//   transporter.sendMail(mesg, function (error, info) {
-//     if (error) {
-//       console.log(error);
-//     } else {
-//       console.log("Email sent: " + info.response);
-//     }
-//   });
+    const customer = await stripe.customers.create({
+      email: token.email,
+      source: token.id,
+    });
 
-//   res.send("Email sent ");
-// });
+    const idempotency_key = uuid();
+    const charge = await stripe.charges.create(
+      {
+        amount: product.price * 100,
+        currency: "usd",
+        customer: customer.id,
+        receipt_email: token.email,
+        description: `Purchased the ${product.name}`,
+        shipping: {
+          name: token.card.name,
+          address: {
+            line1: token.card.address_line1,
+            line2: token.card.address_line2,
+            city: token.card.address_city,
+            country: token.card.address_country,
+            postal_code: token.card.address_zip,
+          },
+        },
+      },
+      {
+        idempotency_key,
+      }
+    );
+    console.log("Charge:", { charge });
+    status = "success";
+  } catch (error) {
+    console.error("Error:", error);
+    status = "failure";
+  }
 
+  res.json({ error, status });
+});
+
+/**
+ */
+router.post("/sendemail", (req, res) => {
+  // console.log(" send email request ... ");
+
+  const auth = {
+    auth: {
+      api_key: "key-93ee67ce13b48562002a34da8df5ef37",
+      domian: "sandboxc404be1d3d254dff83febc409c5042a2.mailgun.org",
+      apiUrl: "https://api.mailgun.net/v3",
+    },
+  };
+  let transporter = nodemailer.createTransport(mailGun(auth));
+  // Message object
+  let message = {
+    from: "mannam.sunitha@gmail.com",
+    to: "sunitha_mannam@yahoo.co.in",
+    subject: "Nodemailer is unicode friendly ✔",
+    text: "Hello to myself!",
+    html: "<p><b>Hello</b> to myself!</p>",
+  };
+
+  transporter.sendMail(message, (err, info) => {
+    if (err) {
+      console.log("Error occurred. " + err);
+      return;
+    }
+    console.log("Message sent: %s", info);
+  });
+});
 /**  */
 module.exports = router;

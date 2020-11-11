@@ -17,29 +17,16 @@ router.post("/new", (req, res) => {
   req.body.checkoutdate = fixTheDate(req.body.checkoutdate);
 
   console.log("bookings/new: ", typeof req.body.checkindate);
-  const {
-    userId,
-    checkindate,
-    checkoutdate,
-    bookingdate,
-    cottageId,
-    cottageNumber,
-    bookingstatus,
-  } = req.body;
-  const newBooking = {
-    userId,
-    checkindate: new Date(checkindate),
-    checkoutdate: new Date(checkoutdate),
-    bookingdate,
-    cottageId,
-    cottageNumber,
-    bookingstatus,
-  };
 
+  const newBooking = {
+    ...req.body,
+    checkindate: new Date(req.body.checkindate),
+    checkoutdate: new Date(req.body.checkoutdate),
+  };
   Session.findById({ _id: req.headers.accesstoken })
     .then((sessionFound) => {
       if (!sessionFound) {
-        return res.status(200).json({ errorMessage: "session not updated " });
+        return res.status(200).json({ errorMessage: "session not active " });
       }
       Booking.create(newBooking).then((newBooking) => {
         return res

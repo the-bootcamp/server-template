@@ -81,7 +81,7 @@ const cottageList = [
       "https://res.cloudinary.com/dqnzc4mlz/image/upload/v1604309470/resortzy-cottage-pictures/pmg8qhc3beit9tg250uk.jpg",
     ],
     description:
-      "These are our budget cottges with cmpact rooms andlimited space and storage.",
+      "These are our budget cottges with compact rooms and limited space and storage.",
     facilities: [
       "Bath amenities",
       "Bathrobes & slippers",
@@ -111,7 +111,7 @@ const cottageList = [
     ],
     costperday: 100,
     description:
-      "These provide views over lanscapeed gardens with small deating area",
+      "These provide views over landscapeed gardens with small seating area",
     facilities: [
       "CHI bath amenities",
       "Bathrobes & slippers",
