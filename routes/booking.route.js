@@ -42,6 +42,7 @@ router.post("/new", (req, res) => {
               return res.status(200).json({
                 success: "Booking created successfully: ",
                 newBooking,
+                cottageinfo,
               });
             }
           );

@@ -5,7 +5,6 @@ exports.fixTheDate = (date) => {
 };
 
 exports.sendBookingConfirmation = (BookingInfo, cottageInfo, userInfo) => {
-  console.log("sendBookingConfirmation", BookingInfo, userInfo);
   const emailcontent = {
     toUser: "",
     subject: "",
