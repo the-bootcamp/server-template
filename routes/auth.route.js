@@ -41,6 +41,7 @@ router.post("/signup", (req, res, next) => {
         address,
         phone,
         userrole,
+        membership: "silver",
       });
     })
     .then((user) => {
